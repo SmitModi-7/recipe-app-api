@@ -1,0 +1,20 @@
+services:
+    #creating service named app
+    app:
+      #build docker file
+      build:
+        #Docker file is inside our current directory
+        context: .
+        args:
+          - DEV=true
+      #maps port 8000 on our local/host machine to port 8000 inside docker container
+      ports:
+        - "8000:8000"
+      #mapping directories from our system into docker container
+      #(As we don't wont to rebuild the container everytime we change 
+            # the code, it will automatically sync the code)
+      volumes:
+        - ./app:/app
+      #Default Command (if we don't override it)
+      command: >
+        sh -c "python manage.py runserver 0.0.0.0:8000"
