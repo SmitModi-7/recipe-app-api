@@ -18,3 +18,27 @@ services:
       #Default Command (if we don't override it)
       command: >
         sh -c "python manage.py runserver 0.0.0.0:8000"
+      environment:
+        - DB_HOST = db
+        - DB_NAME = devdb
+        - DB_USER = devuser
+        - DB_PASS = changeme  
+      #App service will not start untill db service is started
+      depends_on:
+        - db
+
+    #Creating another service named db
+    db:
+      image: postgres:13-alpine
+      #Mapping data of db inside our container to the volume defined 
+      #(which will store data locally so data remians persistent)
+      volumes:
+        - dev-db-data:/var/lib/postgresql/data   
+      #Set initial database config for new db service (For Development Only)  
+      environment:
+        - POSTGRES_DB=devdb
+        - POSTGRES_USER=devuser
+        - POSTGRES_PASSWORD=changeme  
+
+volumes:
+  dev-db-data:
