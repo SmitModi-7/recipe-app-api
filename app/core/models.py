@@ -49,7 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
     email = models.EmailField(unique=True, max_length=255)
-    username = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     # By default the user will be active
     is_active = models.BooleanField(default=True)
     # For giving permission to admin section
