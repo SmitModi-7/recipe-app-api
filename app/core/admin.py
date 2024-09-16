@@ -1,6 +1,9 @@
 """
 Django admin customization.
 """
+
+from core import models
+
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -55,3 +58,4 @@ class UserAdmin(BaseUserAdmin):
 
 # Register the user model and its admin configuration
 admin.site.register(get_user_model(), UserAdmin)
+admin.site.register(models.Recipe)
