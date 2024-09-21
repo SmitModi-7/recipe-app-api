@@ -10,13 +10,19 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 
+# Helper function to create new user
+def create_user(**payload):
+    """Creates and returns new user."""
+    return get_user_model().objects.create_user(**payload)
+
+
 class ModelTest(TestCase):
     """ Testcases for checking models. """
 
     def setUp(self):
         self.email = 'testuser@example.com'
         self.password = 'testpass@123'
-        self.user = get_user_model().objects.create_user(
+        self.user = create_user(
             email=self.email,
             password=self.password
         )
@@ -38,7 +44,7 @@ class ModelTest(TestCase):
         ]
 
         for email, expected_email in email_check:
-            user = get_user_model().objects.create_user(
+            user = create_user(
                 email=email, password='sample@123'
             )
             self.assertEqual(user.email, expected_email)
@@ -73,3 +79,11 @@ class ModelTest(TestCase):
 
         # Checking if correct Recipe is created in our DB.
         self.assertEqual(str(recipe), recipe.title)
+
+    def test_create_tag(self):
+        """Tests creating a tag is successfull."""
+
+        # Creating new tag
+        tag = models.Tag.objects.create(user=self.user, name='Test Tag')
+        # Checking if correct Tag is created in our DB.
+        self.assertEqual(str(tag), tag.name)

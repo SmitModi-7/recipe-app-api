@@ -15,6 +15,7 @@ from recipe import views
 different options available for that viewset """
 router = DefaultRouter()
 router.register('recipes', views.RecipeViewSet)
+router.register('tags', views.TagViewSet)
 
 # Used for reverse mapping
 app_name = 'recipe'
