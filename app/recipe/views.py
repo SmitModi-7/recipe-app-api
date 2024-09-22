@@ -57,43 +57,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class TagViewSet(mixins.UpdateModelMixin,
-                 mixins.ListModelMixin,
-                 mixins.DestroyModelMixin,
-                 viewsets.GenericViewSet):
+class BaseRecipeAttrViewSet(mixins.UpdateModelMixin,
+                            mixins.ListModelMixin,
+                            mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
+
+    """Base viewset for recipe attributes."""
+    # Token Authentication
+    authentication_classes = [TokenAuthentication]
+    # Permissions that authenticated users have in the system
+    permission_classes = [IsAuthenticated]
+
+    """ Overiding getquery set method to filter the Tags/Ingredients for
+    authenticated user """
+    def get_queryset(self):
+        """Retrieve Tags/Ingredients for authenticated user."""
+        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+
+class TagViewSet(BaseRecipeAttrViewSet):
     """Manage tags in the database"""
 
     # Objects available for this viewset
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    # Token Authentication
-    authentication_classes = [TokenAuthentication]
-    # Permissions that authenticated users have in the system
-    permission_classes = [IsAuthenticated]
-
-    """ Overiding getquery set method to filter the tags for
-    authenticated user """
-    def get_queryset(self):
-        """Retrieve tags for authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by('-name')
 
 
-class IngredientViewSet(mixins.ListModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
+class IngredientViewSet(BaseRecipeAttrViewSet):
     """Manage Ingredients in the database"""
 
     # Objects available for this viewset
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    # Token Authentication
-    authentication_classes = [TokenAuthentication]
-    # Permissions that authenticated users have in the system
-    permission_classes = [IsAuthenticated]
-
-    """ Overiding getquery set method to filter the Ingredients for
-    authenticated user """
-    def get_queryset(self):
-        """Retrieve Ingredients for authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by('-name')

@@ -449,7 +449,8 @@ class PrivateRecipeApiTests(TestCase):
             self.assertTrue(ingredient_exists)
 
     def test_update_recipe_assign_ingredient(self):
-        """Updating recipe ingredients if existing ingredients are already present."""
+        """Updating recipe ingredients if existing ingredients are
+        already present."""
         ingredient_indian = Ingredient.objects.create(
             user=self.user,
             name='Indian Chilli Sauce'
