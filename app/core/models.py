@@ -68,7 +68,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Tag(models.Model):
-    """Tag Model fpr filtering recipes"""
+    """Tag Model for storing tags for recipes"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Ingredient(models.Model):
+    """Ingredients for recipes."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
@@ -92,6 +104,8 @@ class Recipe(models.Model):
     link = models.CharField(max_length=255, blank=True)
     # Many Different recipes may have many different tags
     tags = models.ManyToManyField(Tag)
+    # Many Different recipes may have many different ingredients
+    ingredients = models.ManyToManyField(Ingredient)
 
     def __str__(self):
         return self.title
