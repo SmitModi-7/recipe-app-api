@@ -126,7 +126,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+# URL path for static files.
+STATIC_URL = '/static/static/'
+# URL path for user-uploaded media files.
+MEDIA_URL = '/static/media/'
+
+# File system path for storing static files.
+STATIC_ROOT = '/vol/web/static'
+# File system path for storing user-uploaded files.
+MEDIA_ROOT = '/vol/web/media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -139,4 +148,9 @@ AUTH_USER_MODEL = 'core.User'
 # Generate schema for apis
 REST_FRAMEWORK = {
  'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+}
+
+# For image upload to work through browseable interface
+SPECTACULAR_SETTINGS = {
+    'COMPONENT_SPLIT_REQUEST': True,
 }

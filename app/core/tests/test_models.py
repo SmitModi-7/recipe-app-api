@@ -9,6 +9,10 @@ from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from unittest.mock import patch
+
+import os
+
 
 # Helper function to create new user
 def create_user(**payload):
@@ -98,3 +102,21 @@ class ModelTest(TestCase):
         )
         # Checking if correct ingredient is created in our DB.
         self.assertEqual(str(ingredient), ingredient.name)
+
+    # Mocking the behavior of UUID
+    @patch('core.models.uuid.uuid4')
+    def test_recipe_file_name_uuid(self, mock_uuid):
+        """Test generating image path."""
+
+        """Mocking the behaviour of UUID, instead of returning random characters
+        everytime, we are returning test-uuid"""
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
+        # Getting file path which is created for the uploaded image
+        file_path = models.recipe_image_file_path(None, 'example.jpg')
+
+        # Checking if correct file path is generated
+        self.assertEqual(
+                        file_path,
+                        os.path.join('uploads', 'recipe', f'{uuid}.jpg')
+                    )

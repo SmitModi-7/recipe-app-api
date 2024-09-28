@@ -11,20 +11,21 @@ services:
       ports:
         - "8000:8000"
       #mapping directories from our system into docker container
-      #(As we don't wont to rebuild the container everytime we change 
+      #(As we don't wont to rebuild the container everytime we change
             # the code, it will automatically sync the code)
       volumes:
         - ./app:/app
+        - dev-static-data:/vol/web
       command: >
         sh -c "python manage.py wait_for_db &&
                python manage.py makemigrations &&
-               python manage.py migrate && 
+               python manage.py migrate &&
                python manage.py runserver 0.0.0.0:8000"
       environment:
         - DB_HOST=db
         - DB_NAME=devdb
         - DB_USER=devuser
-        - DB_PASS=changeme  
+        - DB_PASS=changeme
       #App service will not start untill db service is started
       depends_on:
         - db
@@ -32,15 +33,16 @@ services:
     #Creating another service named db
     db:
       image: postgres:13-alpine
-      #Mapping data of db inside our container to the volume defined 
+      #Mapping data of db inside our container to the volume defined
       #(which will store data locally so data remians persistent)
       volumes:
-        - dev-db-data:/var/lib/postgresql/data   
-      #Set initial database config for new db service (For Development Only)  
+        - dev-db-data:/var/lib/postgresql/data
+      #Set initial database config for new db service (For Development Only)
       environment:
         - POSTGRES_DB=devdb
         - POSTGRES_USER=devuser
-        - POSTGRES_PASSWORD=changeme  
+        - POSTGRES_PASSWORD=changeme
 
 volumes:
   dev-db-data:
+  dev-static-data:
