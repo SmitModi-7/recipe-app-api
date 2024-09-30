@@ -2,7 +2,12 @@
 Tests for the ingredients API.
 """
 
-from core.models import Ingredient
+from core.models import (
+    Ingredient,
+    Recipe
+)
+
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -127,3 +132,60 @@ class PrivateIngredientsApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Ingredient.objects.filter(id=ingredient.id).exists())
+
+    def test_filter_ingredients_assigned_to_recipes(self):
+        """Only filter ingredients which are assigned to recipe"""
+
+        ingredient_1 = Ingredient.objects.create(user=self.user, name='Pasta')
+        ingredient_2 = Ingredient.objects.create(
+            user=self.user,
+            name='Pink Sauce'
+        )
+
+        recipe_1 = Recipe.objects.create(
+            user=self.user,
+            title='Pink Sauce Pasta',
+            time_minutes=50,
+            price=Decimal('550'),
+            description='Freshly baked pink sauce pasta from Italy',
+        )
+
+        recipe_1.ingredients.add(ingredient_1)
+
+        res = self.client.get(INGREDIENT_URL, {'assigned_only': 1})
+
+        s1 = IngredientSerializer(ingredient_1)
+        s2 = IngredientSerializer(ingredient_2)
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filtered_ingredients_unique(self):
+        """Test filtered ingredients returns a unique list"""
+
+        ing = Ingredient.objects.create(user=self.user, name='Pasta')
+        Ingredient.objects.create(user=self.user, name='Pink Sauce')
+
+        recipe_1 = Recipe.objects.create(
+            user=self.user,
+            title='Pink Sauce Pasta',
+            time_minutes=50,
+            price=Decimal('550'),
+            description='Freshly baked pink sauce pasta from Italy',
+        )
+
+        recipe_2 = Recipe.objects.create(
+            user=self.user,
+            title='Red Sauce Pasta',
+            time_minutes=45,
+            price=Decimal('450'),
+            description='Freshly baked Red sauce pasta from Italy',
+        )
+
+        recipe_1.ingredients.add(ing)
+        recipe_2.ingredients.add(ing)
+
+        res = self.client.get(INGREDIENT_URL, {'assigned_only': 1})
+
+        s1 = IngredientSerializer(ing)
+        self.assertIn(s1.data, res.data)
+        self.assertEqual(len(res.data), 1)

@@ -3,7 +3,12 @@ Test for tag APIs.
 """
 
 
-from core.models import Tag
+from core.models import (
+    Tag,
+    Recipe
+)
+
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -128,3 +133,57 @@ class PrivateTagApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Tag.objects.filter(id=tag.id).exists())
+
+    def test_filter_tags_assigned_to_recipes(self):
+        """Only filter tags which are assigned to recipe"""
+
+        tag_1 = Tag.objects.create(user=self.user, name='Italian')
+        tag_2 = Tag.objects.create(user=self.user, name='Dinner')
+
+        recipe_1 = Recipe.objects.create(
+            user=self.user,
+            title='Pink Sauce Pasta',
+            time_minutes=50,
+            price=Decimal('550'),
+            description='Freshly baked pink sauce pasta from Italy',
+        )
+
+        recipe_1.tags.add(tag_1)
+
+        res = self.client.get(TAG_URL, {'assigned_only': 1})
+
+        s1 = TagSerializer(tag_1)
+        s2 = TagSerializer(tag_2)
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filtered_tags_unique(self):
+        """Test filtered tags returns a unique list"""
+
+        tag = Tag.objects.create(user=self.user, name='Italian')
+        Tag.objects.create(user=self.user, name='Dinner')
+
+        recipe_1 = Recipe.objects.create(
+            user=self.user,
+            title='Pink Sauce Pasta',
+            time_minutes=50,
+            price=Decimal('550'),
+            description='Freshly baked pink sauce pasta from Italy',
+        )
+
+        recipe_2 = Recipe.objects.create(
+            user=self.user,
+            title='Red Sauce Pasta',
+            time_minutes=45,
+            price=Decimal('450'),
+            description='Freshly baked Red sauce pasta from Italy',
+        )
+
+        recipe_1.tags.add(tag)
+        recipe_2.tags.add(tag)
+
+        res = self.client.get(TAG_URL, {'assigned_only': 1})
+
+        s1 = TagSerializer(tag)
+        self.assertIn(s1.data, res.data)
+        self.assertEqual(len(res.data), 1)

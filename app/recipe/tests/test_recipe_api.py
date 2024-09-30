@@ -53,7 +53,6 @@ def create_recipe(user, **params):
         'price': Decimal('5.25'),
         'description': 'Sample Description',
         'link': 'http://example.com/recipe.pdf',
-        # 'tags': [{'name':'Indian'}, {'name': 'Lunch'}]
     }
     # Override arguments in defaults dict. if value is passed in params dict.
     defaults.update(params)
@@ -497,6 +496,55 @@ class PrivateRecipeApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.ingredients.count(), 0)
+
+    def test_filter_recipe_by_tags(self):
+        """Test to filter recipe by tags."""
+        r1 = create_recipe(user=self.user, title='7 Cheese Pizza')
+        r2 = create_recipe(user=self.user, title='Manchurian Dry')
+        tag1 = Tag.objects.create(user=self.user, name='Italian')
+        tag2 = Tag.objects.create(user=self.user, name='Chinese')
+
+        # Adding tags to first 2 recipes only
+        r1.tags.add(tag1)
+        r2.tags.add(tag2)
+        r3 = create_recipe(user=self.user, title='Veg Fried Rice')
+
+        params = {'tags': f'{tag1.id}, {tag2.id}'}
+        res = self.client.get(RECIPE_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+
+        # Only expecting first two recipes in response data
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_recipe_by_ingredients(self):
+        """Test to filter recipe by ingredients."""
+        r1 = create_recipe(user=self.user, title='7 Cheese Pizza')
+        r2 = create_recipe(user=self.user, title='Manchurian Dry')
+        ingredient_1 = Ingredient.objects.create(user=self.user, name='Cheese')
+        ingredient_2 = Ingredient.objects.create(user=self.user,
+                                                 name='Manchurian')
+
+        # Adding tags to first 2 recipes only
+        r1.ingredients.add(ingredient_1)
+        r2.ingredients.add(ingredient_2)
+        r3 = create_recipe(user=self.user, title='Veg Fried Rice')
+
+        params = {'ingredients': f'{ingredient_1.id}, {ingredient_2.id}'}
+        res = self.client.get(RECIPE_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+
+        # Only expecting first two recipes in response data
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
 
 
 class ImageUploadTests(TestCase):
