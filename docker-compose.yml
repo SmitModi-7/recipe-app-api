@@ -1,17 +1,17 @@
 services:
-    #creating service named app
+    # Creating service named app
     app:
-      #build docker file
+      # Build docker file
       build:
-        #Docker file is inside our current directory
+        # Docker file is inside our current directory
         context: .
         args:
           - DEV=true
-      #maps port 8000 on our local/host machine to port 8000 inside docker container
+      # Maps port 8000 on our local/host machine to port 8000 inside docker container
       ports:
         - "8000:8000"
-      #mapping directories from our system into docker container
-      #(As we don't wont to rebuild the container everytime we change
+      # Mapping directories from our system into docker container
+      # (As we don't wont to rebuild the container everytime we change
             # the code, it will automatically sync the code)
       volumes:
         - ./app:/app
@@ -26,18 +26,19 @@ services:
         - DB_NAME=devdb
         - DB_USER=devuser
         - DB_PASS=changeme
-      #App service will not start untill db service is started
+        - DEBUG=1
+      # App service will not start until db service is started
       depends_on:
         - db
 
-    #Creating another service named db
+    # Creating another service named db
     db:
       image: postgres:13-alpine
-      #Mapping data of db inside our container to the volume defined
-      #(which will store data locally so data remians persistent)
+      # Mapping data of db inside our container to the volume defined
+      # (which will store data locally so data remians persistent)
       volumes:
         - dev-db-data:/var/lib/postgresql/data
-      #Set initial database config for new db service (For Development Only)
+      # Set initial database config for new db service (For Development Only)
       environment:
         - POSTGRES_DB=devdb
         - POSTGRES_USER=devuser

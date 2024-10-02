@@ -20,12 +20,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!!oxgere0le7+ha8y-o325as2nyaw9(za9u(&%sc%uf##5$9mk'
+# If secret key is not provided then use 'changme' for local development
+SECRET_KEY = os.environ.get('SECRET_KEY', 'changme')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
+""" Allowed hosts is a security mechanishm that ensures that Django App is only
+accessible via specific host names. """
 ALLOWED_HOSTS = []
+# Accepting Comma separated list of host names/Allowing multiple hosts
+ALLOWED_HOSTS.extend(
+    filter(
+        None,
+        os.environ.get('ALLOWED_HOSTS', '').split(','),
+    )
+)
+
 
 
 # Application definition

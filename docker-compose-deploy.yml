@@ -1,0 +1,57 @@
+services:
+    # Creating service named app
+    app:
+      # Build docker file
+      build:
+        # Docker file is inside our current directory
+        context: .
+      # If App crashes then restart service automatically
+      restart: always
+      # Creating volume static-data which will be used to serve static data through Nginx Proxy
+      volumes:
+        - static-data:/vol/web
+      # Configurations of app service
+      environment:
+        - DB_HOST=db
+        - DB_NAME=${DB_NAME}
+        - DB_USER=${DB_USER}
+        - DB_PASS=${DB_PASS}
+        - SECRET_KEY=${DJANGO_SECRET_KEY}
+        - ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+      # App service will not start until db service is started
+      depends_on:
+        - db
+
+    # Creating another service named db
+    db:
+      image: postgres:13-alpine
+      restart: always
+      # Mapping data of db inside our container to the volume defined
+      # (which will store data locally so data remians persistent)
+      volumes:
+        - postgres-data:/var/lib/postgresql/data
+      # Set initial database config for new db service
+      environment:
+        - POSTGRES_DB=${DB_NAME}
+        - POSTGRES_USER=${DB_USER}
+        - POSTGRES_PASSWORD=${DB_PASS}
+
+    # Creating another service named proxy
+    proxy:
+      build:
+        context: ./proxy
+      restart: always
+      # Proxy service will not start until app service is started
+      depends_on:
+        - app
+      # This maps port 80 on the host (which is the standard HTTP port) to port 8000
+      #    on the proxy container (where the application is listening).
+      # This makes the application accessible from http://localhost on port 80.
+      ports:
+        - 80:8000
+      volumes:
+        - static-data:/vol/static
+
+volumes:
+  postgres-data:
+  static-data:
